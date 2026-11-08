@@ -1,0 +1,49 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the compiler (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y g++-14 ninja-build
+
+      - name: Install Ninja (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja
+
+      - name: Set up MSVC (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure
+        env:
+          CXX: ${{ runner.os == 'Linux' && 'g++-14' || runner.os == 'macOS' && 'clang++' || 'cl' }}
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      # The real binary, without a terminal: scan this checkout, open a
+      # directory, print the screen. RTXUI_STRICT=1 fails on anything RTXUI
+      # would silently ignore.
+      - name: Run headless
+        shell: bash
+        env:
+          RTXUI_HEADLESS: 100x20
+          RTXUI_STRICT: 1
+        run: printf 'j\x1b[C' | ./build/dusk .
