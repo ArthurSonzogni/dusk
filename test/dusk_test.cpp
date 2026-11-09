@@ -51,9 +51,11 @@ int main() {
     Expect(tree->children[3]->name == "small.txt", "the smallest comes last");
   }
 
+  // The app scans on a thread, as it does in a terminal.
   auto app = rtxui::Ref<dusk::Dusk>::New();
-  app->SetTree(std::move(tree));
   rtxui::HeadlessScreen screen(app, 100, 12);
+  app->StartScan(root);
+  Expect(screen.WaitUntil([&] { return !app->scanning; }), "the scan ends");
   Expect(screen.Text().find("big.bin") != std::string::npos,
          "the listing is drawn", screen.Text());
 
@@ -119,10 +121,11 @@ int main() {
   Expect(names() == "big.bin sub/ mid.bin ", "and from the list", names());
   Expect(app->directory()->files == 3, "the totals follow");
 
-  // r scans the directory again, which finds a file made meanwhile.
-  app->synchronous = true;
+  // r scans the directory again, on a thread, which finds a file made
+  // meanwhile.
   WriteFile(root / "new.bin", 300'000);
   screen.Input("r");
+  Expect(screen.WaitUntil([&] { return !app->scanning; }), "the scan ends");
   Expect(names() == "big.bin new.bin sub/ mid.bin ", "r finds the new file",
          names());
   Expect(app->directory()->files == 4, "and counts it");

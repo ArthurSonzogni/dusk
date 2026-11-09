@@ -139,10 +139,6 @@ void Dusk::ScanInto(Node* target, const fs::path& root) {
   });
 }
 
-void Dusk::SetTree(std::unique_ptr<Node> tree) {
-  Replace(nullptr, std::move(tree));
-}
-
 void Dusk::Replace(Node* target, std::unique_ptr<Node> scanned) {
   scanning = false;
   if (!target) {

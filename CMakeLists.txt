@@ -11,7 +11,7 @@ FetchContent_Declare(rtxui
   GIT_REPOSITORY https://github.com/ArthurSonzogni/RTXUI.git
   # Newer than v0.1.4, the last release: ElementHandle::ScrollIntoView(),
   # flex items keeping their content's height, and /utf-8 for MSVC.
-  GIT_TAG        7041b3e0d177cb0733744013d1f3b54cfe14f217
+  GIT_TAG        e158f9cf890b692ec0b18835688ae93f8dcfd36c
   EXCLUDE_FROM_ALL
 )
 FetchContent_MakeAvailable(rtxui)

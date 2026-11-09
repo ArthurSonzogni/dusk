@@ -46,8 +46,8 @@ class Dusk : public rtxui::Component<Dusk> {
 
   // Set by main(): what `q` does.
   std::function<void()> on_quit;
-  // Scans on the calling thread rather than a worker: for scripts and tests,
-  // which read the screen once the input is handled.
+  // Scans on the calling thread rather than a worker: for RTXUI_HEADLESS
+  // runs, which print the screen once the input is handled.
   bool synchronous = false;
 
   bool scanning = false;
@@ -78,8 +78,6 @@ class Dusk : public rtxui::Component<Dusk> {
   // Scans `root`, on a worker thread unless `synchronous`, showing its
   // progress meanwhile.
   void StartScan(const std::filesystem::path& root);
-  // Shows a tree scanned already.
-  void SetTree(std::unique_ptr<Node> tree);
 
   bool is_empty() const { return !scanning && rows.empty(); }
   bool has_notice() const { return !notice.empty(); }
@@ -182,18 +180,14 @@ class Dusk : public rtxui::Component<Dusk> {
           background-color: var(--surface);
           color: var(--muted);
         }
-        /* Text wraps anywhere by default: what must stay whole keeps its
-           width, and the path and the notice give way instead. */
+        /* What does not wrap keeps its width; the path and the notice,
+           which clip, give way instead. */
         .header > span, .footer > span {
-          flex-shrink: 0;
           white-space: nowrap;
         }
         .brand {
           color: var(--accent);
           font-weight: bold;
-        }
-        .header > .path, .footer > .notice {
-          flex-shrink: 1;
         }
         .path {
           flex-grow: 1;
@@ -220,9 +214,6 @@ class Dusk : public rtxui::Component<Dusk> {
         }
         .filter {
           color: var(--accent);
-        }
-        dialog::part(dialog-box) {
-          width: 56;
         }
         .detail {
           color: var(--muted);
